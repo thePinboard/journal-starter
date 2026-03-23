@@ -1,0 +1,10 @@
+.git
+.venv
+tests
+__pycache__
+*.pyc
+*.pyo
+.env
+fix.sh
+fix_and_run.sh
+api.log
