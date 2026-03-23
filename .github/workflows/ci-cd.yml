@@ -9,9 +9,9 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4.2.2
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v5.4.0
         with:
           python-version: '3.11'
       - name: Install uv
@@ -25,15 +25,15 @@ jobs:
     runs-on: ubuntu-latest
     needs: test
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4.2.2
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@v3.3.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build and push image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6.10.0
         with:
           push: true
           tags: ghcr.io/${{ github.repository }}:${{ github.sha }}
@@ -42,17 +42,11 @@ jobs:
     runs-on: ubuntu-latest
     needs: build-and-push
     steps:
-      - uses: actions/checkout@v4
-      - name: Set Kubernetes context
-        uses: azure/k8s-set-context@v4
-        with:
-          method: kubeconfig
-          kubeconfig: ${{ secrets.KUBECONFIG }}
-      - name: Deploy to Kubernetes
-        uses: azure/k8s-deploy@v4
-        with:
-          manifests: |
-            k8s/deployment.yaml
-            k8s/service.yaml
-          images: |
-            ghcr.io/${{ github.repository }}:${{ github.sha }}
+      - uses: actions/checkout@v4.2.2
+      - name: Simulate deploy (no cluster available)
+        run: |
+          sed -i "s|IMAGE_PLACEHOLDER|ghcr.io/${{ github.repository }}:${{ github.sha }}|g" k8s/deployment.yaml
+          echo "Would deploy the following manifests:"
+          cat k8s/deployment.yaml
+          cat k8s/service.yaml
+          echo "Deploy simulation successful"
